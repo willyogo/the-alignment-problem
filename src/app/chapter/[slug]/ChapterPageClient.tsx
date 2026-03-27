@@ -24,9 +24,16 @@ export function ChapterPageClient({
 }) {
   const { doorRevealed, setChapterProgress, completeChapter } = useReadingProgress();
   const artRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
   const [audioSticky, setAudioSticky] = useState(true);
+  const [headerHeight, setHeaderHeight] = useState(41);
 
   useEffect(() => {
+    // Measure actual header height
+    if (headerRef.current) {
+      setHeaderHeight(headerRef.current.getBoundingClientRect().height);
+    }
+
     function handleScroll() {
       const scrollTop = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -36,7 +43,7 @@ export function ChapterPageClient({
         completeChapter(chapter.slug);
       }
 
-      // Keep audio bar sticky until user scrolls past the artwork
+      // Keep audio bar visible until user scrolls past the artwork
       if (artRef.current) {
         const artBottom = artRef.current.getBoundingClientRect().bottom;
         setAudioSticky(artBottom > 0);
@@ -49,10 +56,15 @@ export function ChapterPageClient({
   return (
     <PaletteProvider theme={chapter.theme}>
       <SimulationSeam intensity={chapter.glitchIntensity} />
-      <Header doorRevealed={doorRevealed} />
+      <div ref={headerRef}>
+        <Header doorRevealed={doorRevealed} />
+      </div>
 
       {audioSticky && (
-        <div className="fixed left-0 right-0 top-[49px] z-40 flex items-center justify-between px-6 py-2 border-b border-[var(--border)] bg-[var(--bg)]">
+        <div
+          className="fixed left-0 right-0 z-40 flex items-center justify-between px-6 py-2 border-b border-[var(--border)] bg-[var(--bg)]"
+          style={{ top: `${headerHeight}px` }}
+        >
           <AudioPlayer chapterNumber={chapter.number} />
           <AmbientToggle chapterNumber={chapter.number} />
         </div>

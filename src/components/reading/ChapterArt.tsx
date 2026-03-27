@@ -19,7 +19,7 @@ export function ChapterArt({
     <>
       <div
         className="relative w-full overflow-hidden border-b border-[var(--border)] cursor-pointer group"
-        style={{ height: "clamp(320px, 40vh, 480px)" }}
+        style={{ height: "min(50vh, 500px)", minHeight: "350px" }}
         onClick={() => setLightboxOpen(true)}
       >
         <Image
