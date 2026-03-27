@@ -25,9 +25,7 @@ export function ProseBlock({
     <p
       className={`text-base leading-relaxed mb-6 relative ${
         glitchIntensity > 0.1 ? "glitch-text" : ""
-      } ${glitchIntensity > 0.2 ? "jitter-text" : ""} ${
-        showBleed ? "code-bleed" : ""
-      }`}
+      } ${showBleed ? "code-bleed" : ""}`}
       style={
         {
           "--glitch-intensity": glitchIntensity,
