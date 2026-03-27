@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Chapter } from "@/lib/types";
 import { PaletteProvider } from "@/components/effects/PaletteProvider";
 import { SimulationSeam } from "@/components/effects/SimulationSeam";
@@ -24,47 +24,37 @@ export function ChapterPageClient({
 }) {
   const { doorRevealed, setChapterProgress, completeChapter } = useReadingProgress();
   const artRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const [audioSticky, setAudioSticky] = useState(true);
-  const [headerHeight, setHeaderHeight] = useState(41);
+  const [showAudioBar, setShowAudioBar] = useState(true);
+
+  const handleScroll = useCallback(() => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? scrollTop / docHeight : 0;
+    setChapterProgress(chapter.slug, progress);
+    if (progress > 0.95) {
+      completeChapter(chapter.slug);
+    }
+
+    // Hide audio bar once the artwork has fully scrolled out of view
+    if (artRef.current) {
+      const artBottom = artRef.current.getBoundingClientRect().bottom;
+      // artBottom <= header height (~41px) + audio bar height (~37px) means art is past both bars
+      setShowAudioBar(artBottom > 80);
+    }
+  }, [chapter.slug, setChapterProgress, completeChapter]);
 
   useEffect(() => {
-    // Measure actual header height
-    if (headerRef.current) {
-      setHeaderHeight(headerRef.current.getBoundingClientRect().height);
-    }
-
-    function handleScroll() {
-      const scrollTop = window.scrollY;
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = docHeight > 0 ? scrollTop / docHeight : 0;
-      setChapterProgress(chapter.slug, progress);
-      if (progress > 0.95) {
-        completeChapter(chapter.slug);
-      }
-
-      // Keep audio bar visible until user scrolls past the artwork
-      if (artRef.current) {
-        const artBottom = artRef.current.getBoundingClientRect().bottom;
-        setAudioSticky(artBottom > 0);
-      }
-    }
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [chapter.slug, setChapterProgress, completeChapter]);
+  }, [handleScroll]);
 
   return (
     <PaletteProvider theme={chapter.theme}>
       <SimulationSeam intensity={chapter.glitchIntensity} />
-      <div ref={headerRef}>
-        <Header doorRevealed={doorRevealed} />
-      </div>
+      <Header doorRevealed={doorRevealed} />
 
-      {audioSticky && (
-        <div
-          className="fixed left-0 right-0 z-40 flex items-center justify-between px-6 py-2 border-b border-[var(--border)] bg-[var(--bg)]"
-          style={{ top: `${headerHeight}px` }}
-        >
+      {showAudioBar && (
+        <div className="fixed left-0 right-0 z-40 flex items-center justify-between px-6 py-2 border-b border-[var(--border)] bg-[var(--bg)]" style={{ top: "41px" }}>
           <AudioPlayer chapterNumber={chapter.number} />
           <AmbientToggle chapterNumber={chapter.number} />
         </div>
