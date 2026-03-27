@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
+import "@/styles/artifacts.css";
 
 export const metadata: Metadata = {
   title: "The Alignment Problem",
