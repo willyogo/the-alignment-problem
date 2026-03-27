@@ -35,8 +35,6 @@ yarn-error.log*
 .env
 
 # project-specific
-public/audio/narration/
-public/audio/ambient/
 .superpowers/
 
 # vercel
