@@ -6,11 +6,17 @@ export function AmbientToggle({ chapterNumber }: { chapterNumber: number }) {
   const { playing, toggle, setVolume } = useAudio(src, true);
 
   return (
-    <div className="flex items-center gap-2 text-xs font-mono">
-      <button onClick={() => { toggle(); setVolume(0.3); }} className={`transition-opacity ${playing ? "text-[var(--accent)] opacity-70" : "text-[var(--text)] opacity-30"} hover:opacity-80`} aria-label={playing ? "Mute ambient" : "Play ambient"}>
-        {playing ? "♫" : "♪"}
-      </button>
-      <span className="text-[var(--text)] opacity-30">{playing ? "ambient" : "ambient off"}</span>
-    </div>
+    <button
+      onClick={() => { toggle(); setVolume(0.3); }}
+      className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-mono transition-all duration-300 ${
+        playing
+          ? "border-[var(--accent)] text-[var(--accent)] bg-[var(--accent)]/10"
+          : "border-[var(--text)]/20 text-[var(--text)] opacity-50 hover:opacity-80 hover:border-[var(--text)]/40"
+      }`}
+      aria-label={playing ? "Mute ambient" : "Play ambient"}
+    >
+      <span className="text-sm">{playing ? "♫" : "♪"}</span>
+      <span>{playing ? "ambient on" : "ambient"}</span>
+    </button>
   );
 }
