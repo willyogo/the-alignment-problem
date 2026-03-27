@@ -669,12 +669,11 @@ function generateBlocks(
 
   function flushProse() {
     if (currentProse.length > 0) {
-      const text = currentProse.join("\n").trim();
-      if (text) {
-        const paragraphs = text.split(/\n\s*\n/).filter((p) => p.trim());
-        for (const para of paragraphs) {
+      for (const line of currentProse) {
+        const trimmed = line.trim();
+        if (trimmed) {
           blocks.push(
-            `    { type: "prose", text: ${JSON.stringify(para.trim())} }`
+            `    { type: "prose", text: ${JSON.stringify(trimmed)} }`
           );
         }
       }
