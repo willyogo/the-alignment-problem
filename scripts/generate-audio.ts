@@ -126,7 +126,7 @@ async function generateAmbient(chapterNumber: number): Promise<void> {
 
   // Step 2: Poll for completion
   let attempts = 0;
-  const maxAttempts = 60; // 5 minutes max
+  const maxAttempts = 180; // 15 minutes max
   while (attempts < maxAttempts) {
     await sleep(5000);
     attempts++;
