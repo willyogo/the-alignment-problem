@@ -137,32 +137,37 @@ async function generateAmbient(chapterNumber: number): Promise<void> {
         Authorization: `Bearer ${VENICE_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ queue_id }),
+      body: JSON.stringify({ queue_id, model: "elevenlabs-music" }),
     });
 
+    const contentType = statusResponse.headers.get("content-type") || "";
+    if (statusResponse.ok && (contentType.includes("audio") || contentType.includes("octet-stream"))) {
+      // Audio is ready
+      const buffer = Buffer.from(await statusResponse.arrayBuffer());
+      fs.writeFileSync(outPath, buffer);
+      console.log(`  Saved ambient: ${outPath} (${(buffer.length / 1024 / 1024).toFixed(1)} MB)`);
+
+      // Mark as complete
+      await fetch("https://api.venice.ai/api/v1/audio/complete", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${VENICE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ queue_id, model: "elevenlabs-music" }),
+      });
+      return;
+    }
+
+    // Not ready yet — log status and continue polling
     if (statusResponse.ok) {
-      const contentType = statusResponse.headers.get("content-type") || "";
-      if (contentType.includes("audio") || contentType.includes("octet-stream")) {
-        // Audio is ready
-        const buffer = Buffer.from(await statusResponse.arrayBuffer());
-        fs.writeFileSync(outPath, buffer);
-        console.log(`  Saved ambient: ${outPath} (${(buffer.length / 1024 / 1024).toFixed(1)} MB)`);
-
-        // Mark as complete
-        await fetch("https://api.venice.ai/api/v1/audio/complete", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${VENICE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ queue_id }),
-        });
-        return;
-      }
-
-      // Still processing
       const data = await statusResponse.json();
       console.log(`  Ambient ch ${chapterNumber}: ${data.status || "processing"}... (attempt ${attempts})`);
+    } else {
+      // 404 or other error = still processing
+      if (attempts % 12 === 0) {
+        console.log(`  Ambient ch ${chapterNumber}: waiting... (attempt ${attempts})`);
+      }
     }
   }
 
