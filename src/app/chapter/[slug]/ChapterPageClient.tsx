@@ -53,12 +53,15 @@ export function ChapterPageClient({
       <SimulationSeam intensity={chapter.glitchIntensity} />
       <Header doorRevealed={doorRevealed} />
 
-      {showAudioBar && (
-        <div className="fixed left-0 right-0 z-40 flex items-center justify-between px-6 py-2 border-b border-[var(--border)] bg-[var(--bg)]" style={{ top: "41px" }}>
-          <AudioPlayer chapterNumber={chapter.number} />
-          <AmbientToggle chapterNumber={chapter.number} />
-        </div>
-      )}
+      <div
+        className={`fixed left-0 right-0 z-40 flex items-center justify-between px-6 py-2 border-b border-[var(--border)] bg-[var(--bg)] transition-all duration-300 ${
+          showAudioBar ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full pointer-events-none"
+        }`}
+        style={{ top: "41px" }}
+      >
+        <AudioPlayer chapterNumber={chapter.number} />
+        <AmbientToggle chapterNumber={chapter.number} />
+      </div>
 
       <div ref={artRef}>
         <ChapterArt
