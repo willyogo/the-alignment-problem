@@ -80,10 +80,23 @@ async function generateNarration(chapterNumber: number, text: string): Promise<v
     await sleep(1000);
   }
 
-  // Concatenate MP3 chunks (simple concatenation works for MP3)
+  // Concatenate MP3 chunks
   const fullAudio = Buffer.concat(audioBuffers);
-  fs.writeFileSync(outPath, fullAudio);
-  console.log(`  Saved narration: ${outPath} (${(fullAudio.length / 1024 / 1024).toFixed(1)} MB)`);
+  const tempPath = outPath + ".tmp";
+  fs.writeFileSync(tempPath, fullAudio);
+
+  // Re-mux with ffmpeg to fix duration metadata (concatenated MP3s have wrong headers)
+  try {
+    const { execSync } = require("child_process");
+    execSync(`ffmpeg -y -i "${tempPath}" -c copy -write_xing 1 "${outPath}" 2>/dev/null`);
+    fs.unlinkSync(tempPath);
+    const finalSize = fs.statSync(outPath).size;
+    console.log(`  Saved narration: ${outPath} (${(finalSize / 1024 / 1024).toFixed(1)} MB)`);
+  } catch {
+    // ffmpeg not available — fall back to raw concatenation
+    fs.renameSync(tempPath, outPath);
+    console.log(`  Saved narration: ${outPath} (${(fullAudio.length / 1024 / 1024).toFixed(1)} MB) [warning: no ffmpeg, duration metadata may be incorrect]`);
+  }
 }
 
 // ── AMBIENT (Venice Audio Generation API) ──
