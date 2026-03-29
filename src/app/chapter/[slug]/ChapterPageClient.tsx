@@ -59,7 +59,7 @@ export function ChapterPageClient({
         }`}
         style={{ top: "41px" }}
       >
-        <AudioPlayer chapterNumber={chapter.number} />
+        <AudioPlayer chapterNumber={chapter.number} nextChapterSlug={nextChapter?.slug} />
         <AmbientToggle chapterNumber={chapter.number} />
       </div>
 
